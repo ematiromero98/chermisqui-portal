@@ -10,90 +10,275 @@
 <style>
   :root{
     --fondo:#0f1218; --card:#171c26; --card2:#1c222e; --borde:#242c39;
-    --menta:#2ee6a6; --celeste:#5bb0ff; --ambar:#f6b64b; --violet:#b98bff;
-    --texto:#eef2f8; --suave:#8a94a6; --celeste-t:#122436;
+    --menta:#2ee6a6; --celeste:#5bb0ff; --ambar:#f6b64b; --violet:#b98bff; --rojo:#f6465d;
+    --texto:#eef2f8; --suave:#8a94a6; --celeste-t:#122436; --menta-t:#12271f;
     --sans:"IBM Plex Sans","Segoe UI",sans-serif; --mono:"IBM Plex Mono","Consolas",monospace;
   }
   *{box-sizing:border-box} html,body{margin:0}
   body{background:radial-gradient(1200px 600px at 50% -10%,#141a25,var(--fondo)) fixed;color:var(--texto);
     font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100vh}
-  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
-  a{text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+  a{text-decoration:none;color:var(--menta)}
+  .hidden{display:none!important}
 
-  .hero{text-align:center;padding:64px 20px 26px}
-  .hero .logo{width:66px;height:66px;border-radius:18px;background:var(--celeste-t);border:1px solid var(--borde);
-    display:inline-grid;place-items:center;font-size:34px;margin-bottom:16px}
-  .hero .tag{color:var(--menta);font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:12px;margin-bottom:10px}
-  .hero h1{margin:0;font-size:34px;font-weight:700;letter-spacing:-.5px}
-  .hero p{color:var(--suave);font-size:16px;max-width:560px;margin:12px auto 0}
+  /* ===== Gate ===== */
+  .gate{position:fixed;inset:0;background:radial-gradient(900px 500px at 50% -10%,#141a25,#0b0e13);
+    display:grid;place-items:center;z-index:100;padding:20px}
+  .gate-card{background:var(--card);border:1px solid var(--borde);border-radius:18px;padding:28px;max-width:360px;width:100%;text-align:center}
+  .gate-card .logo{width:60px;height:60px;border-radius:16px;background:var(--celeste-t);border:1px solid var(--borde);display:inline-grid;place-items:center;font-size:30px;margin-bottom:14px}
+  .gate-card h1{font-size:20px;margin:0 0 4px}
+  .gate-card p{color:var(--suave);font-size:13px;margin:0 0 16px}
+  .gate-card input{width:100%;background:var(--fondo);border:1px solid var(--borde);border-radius:11px;padding:12px;color:var(--texto);font-size:15px;text-align:center}
+  .gate-card input:focus{outline:none;border-color:var(--menta)}
+  .gate-card button{width:100%;margin-top:12px;background:var(--menta);color:#04120c;border:none;border-radius:11px;padding:13px;font-weight:700;font-size:15px;cursor:pointer}
+  .gate-err{color:var(--rojo);font-size:12.5px;min-height:16px;margin-top:8px}
+  .gate-card label{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;font-size:12.5px;color:var(--suave)}
 
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px 0 60px}
+  /* ===== Topbar ===== */
+  .top{display:flex;align-items:center;gap:12px;padding:18px 0 8px;flex-wrap:wrap}
+  .top .logo{width:40px;height:40px;border-radius:11px;background:var(--celeste-t);border:1px solid var(--borde);display:grid;place-items:center;font-size:21px}
+  .top h1{font-size:18px;margin:0;letter-spacing:-.3px}
+  .top .sub{color:var(--suave);font-size:12px}
+  .top .sp{flex:1}
+  .nav{display:flex;gap:4px;background:var(--card);border:1px solid var(--borde);border-radius:11px;padding:3px}
+  .nav button{background:transparent;border:none;color:var(--suave);font-family:inherit;font-weight:600;font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .nav button.on{background:var(--menta-t);color:var(--menta)}
+  .logout{background:transparent;border:1px solid var(--borde);color:var(--suave);border-radius:9px;padding:7px 12px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:inherit}
+
+  /* ===== Home ===== */
+  .hero{text-align:center;padding:34px 20px 20px}
+  .hero .tag{color:var(--menta);font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:12px;margin-bottom:8px}
+  .hero h2{margin:0;font-size:30px;font-weight:700;letter-spacing:-.5px}
+  .hero p{color:var(--suave);font-size:15px;max-width:540px;margin:10px auto 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:12px 0 50px}
   @media(max-width:720px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--borde);border-radius:18px;padding:24px;display:flex;flex-direction:column}
-  .card .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--borde);border-radius:18px;padding:22px;display:flex;flex-direction:column}
+  .card .ic{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;font-size:25px;margin-bottom:13px}
   .card.cal .ic{background:rgba(46,230,166,.12);border:1px solid rgba(46,230,166,.3)}
-  .card.qb  .ic{background:rgba(91,176,255,.12);border:1px solid rgba(91,176,255,.3)}
+  .card.qb .ic{background:rgba(91,176,255,.12);border:1px solid rgba(91,176,255,.3)}
   .card.soon .ic{background:rgba(185,139,255,.10);border:1px solid rgba(185,139,255,.25)}
-  .card h2{margin:0 0 6px;font-size:19px}
-  .card p{color:var(--suave);font-size:13.5px;margin:0 0 16px;flex:1}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .card h3{margin:0 0 6px;font-size:18px}
+  .card p{color:var(--suave);font-size:13.5px;margin:0 0 14px;flex:1}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
   .chip{font-size:11px;font-weight:600;color:var(--suave);background:var(--card2);border:1px solid var(--borde);border-radius:20px;padding:3px 10px}
   .actions{display:flex;gap:9px;flex-wrap:wrap}
-  .btn{display:inline-block;border-radius:11px;padding:11px 16px;font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--borde);color:var(--texto);background:var(--card2)}
+  .btn{display:inline-block;border-radius:11px;padding:10px 15px;font-weight:700;font-size:14px;cursor:pointer;border:1px solid var(--borde);color:var(--texto);background:var(--card2)}
   .btn:hover{border-color:var(--celeste)}
   .btn.primary{background:var(--menta);color:#04120c;border:none}
   .btn.blue{background:var(--celeste);color:#04120c;border:none}
-  .card.soon{opacity:.7}
-  .card.soon .btn{cursor:default;opacity:.6}
+  .card.soon{opacity:.7}.card.soon .btn{cursor:default;opacity:.6}
 
-  footer{text-align:center;color:var(--suave);font-size:12.5px;padding:24px 20px 50px;border-top:1px solid var(--borde)}
+  /* ===== Arquitectura ===== */
+  .arch-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0 4px}
+  .arch-head h2{font-size:22px;margin:0}
+  .arch-head p{color:var(--suave);font-size:13.5px;margin:2px 0 0;flex:1;min-width:200px}
+  .d3btn{background:var(--card);border:1px solid var(--borde);color:var(--suave);border-radius:9px;padding:7px 13px;font-weight:600;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .d3btn.on{background:var(--menta-t);color:var(--menta);border-color:transparent}
+
+  .stage{perspective:1700px;padding:10px 0 30px;overflow:visible}
+  .layers{display:flex;flex-direction:column;gap:30px;transition:transform .5s ease;transform-style:preserve-3d}
+  .stage.d3 .layers{transform:rotateX(52deg) rotateZ(-6deg) scale(.9)}
+  .stage.d3 .layer{box-shadow:0 26px 40px rgba(0,0,0,.45)}
+  .layer{position:relative;background:linear-gradient(180deg,var(--card),#141924);border:1px solid var(--borde);
+    border-radius:16px;padding:14px 16px;transition:transform .5s ease}
+  .stage.d3 .layer{transform:translateZ(var(--z,0px))}
+  .layer .lh{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--suave);margin-bottom:10px}
+  .layer .lh .tagc{width:9px;height:9px;border-radius:3px}
+  .nodes{display:flex;gap:10px;flex-wrap:wrap}
+  .node{flex:1;min-width:150px;background:var(--fondo);border:1px solid var(--borde);border-radius:12px;padding:11px 13px}
+  .node b{font-size:13.5px;display:block}
+  .node span{font-size:11.5px;color:var(--suave);display:block;margin-top:2px}
+  .node .k{font-family:var(--mono);font-size:10.5px;color:var(--menta);margin-top:5px;display:inline-block}
+  .node.lock{border-color:rgba(246,70,93,.35)} .node.lock .k{color:var(--rojo)}
+  .node.open{border-color:rgba(46,230,166,.35)}
+  .conn{display:flex;justify-content:center;margin:-22px 0 -22px;position:relative;z-index:2}
+  .conn i{width:2px;height:26px;background:linear-gradient(var(--celeste),transparent);opacity:.6}
+  .conn b{position:absolute;top:3px;background:var(--card2);border:1px solid var(--borde);border-radius:20px;
+    font-size:10.5px;color:var(--suave);padding:2px 10px;font-weight:600;white-space:nowrap}
+
+  .legend2{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 16px;color:var(--suave);font-size:12px}
+  .legend2 span{display:flex;align-items:center;gap:6px}
+  .legend2 i{width:10px;height:10px;border-radius:3px}
+
+  .sec{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:6px 0 50px}
+  @media(max-width:760px){.sec{grid-template-columns:1fr}}
+  .seccard{background:var(--card);border:1px solid var(--borde);border-radius:14px;padding:18px}
+  .seccard .ic{font-size:22px;margin-bottom:8px}
+  .seccard h4{margin:0 0 6px;font-size:15px}
+  .seccard p{color:var(--suave);font-size:12.5px;margin:0}
+  .seccard.ok{border-color:rgba(46,230,166,.3)} .seccard.warn{border-color:rgba(246,182,75,.3)}
+
+  footer{text-align:center;color:var(--suave);font-size:12.5px;padding:22px 20px 44px;border-top:1px solid var(--borde)}
   footer b{color:var(--texto)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="hero">
+
+<!-- ===== Gate ===== -->
+<div id="gate" class="gate">
+  <form class="gate-card" id="gate-form" autocomplete="off">
     <div class="logo">🧭</div>
-    <div class="tag">Herramientas internas</div>
-    <h1>Chermisqui · Portal del equipo</h1>
-    <p>Todo en un lugar. Entrá a cada herramienta desde acá — se usan en la compu o en el celular, sin instalar nada.</p>
-  </div>
-
-  <div class="grid">
-    <!-- Control de Días -->
-    <div class="card cal">
-      <div class="ic">🏖️</div>
-      <h2>Control de Días</h2>
-      <p>Vacaciones y licencias del equipo. Cargá tus días desde el celular; el jefe aprueba y todos ven la cobertura del año, con feriados y fechas fuertes de cierres marcadas.</p>
-      <div class="chips"><span class="chip">Empleados: sin PIN</span><span class="chip">Jefe: con PIN</span><span class="chip">En vivo</span></div>
-      <div class="actions">
-        <a class="btn primary" href="https://ematiromero98.github.io/chermisqui-control-dias/">Cargar mis vacaciones</a>
-        <a class="btn" href="https://ematiromero98.github.io/chermisqui-control-dias/">Panel del jefe</a>
-      </div>
-    </div>
-
-    <!-- QB Dashboard -->
-    <div class="card qb">
-      <div class="ic">📊</div>
-      <h2>Dashboard QuickBooks</h2>
-      <p>Control de conciliaciones mensuales: estado por cuenta, checklist, cuentas manuales, KPIs y gráficos. Todos trabajan sobre el mismo dato, en vivo.</p>
-      <div class="chips"><span class="chip">Con PIN</span><span class="chip">Multiusuario</span><span class="chip">Export CSV</span></div>
-      <div class="actions">
-        <a class="btn blue" href="https://ematiromero98.github.io/qb-dashboard/">Abrir dashboard</a>
-      </div>
-    </div>
-
-    <!-- Próximamente -->
-    <div class="card soon">
-      <div class="ic">➕</div>
-      <h2>Más módulos</h2>
-      <p>Acá se van sumando las próximas herramientas del estudio (reportes, sueldos, y lo que necesitemos), todas con la misma entrada.</p>
-      <div class="chips"><span class="chip">Próximamente</span></div>
-      <div class="actions"><span class="btn">En preparación</span></div>
-    </div>
-  </div>
+    <h1>Portal del equipo</h1>
+    <p>Chermisqui &amp; Associates · acceso interno</p>
+    <input id="pin" type="password" placeholder="Clave de acceso" autocomplete="off">
+    <label><input type="checkbox" id="remember" style="width:auto"> Recordar en esta compu</label>
+    <button type="submit">Entrar</button>
+    <div class="gate-err" id="err"></div>
+  </form>
 </div>
 
+<!-- ===== Portal ===== -->
+<div id="portal" class="hidden">
+<div class="wrap">
+  <div class="top">
+    <div class="logo">🧭</div>
+    <div><h1>Chermisqui · Portal del equipo</h1><div class="sub">Herramientas internas</div></div>
+    <div class="sp"></div>
+    <div class="nav"><button data-v="home" class="on">Herramientas</button><button data-v="arch">🗺️ Arquitectura</button></div>
+    <button class="logout" id="logout">Salir</button>
+  </div>
+
+  <!-- Home -->
+  <section id="home">
+    <div class="hero">
+      <div class="tag">Herramientas internas</div>
+      <h2>Todo en un lugar</h2>
+      <p>Entrá a cada herramienta desde acá — en la compu o el celular, sin instalar nada.</p>
+    </div>
+    <div class="grid">
+      <div class="card cal">
+        <div class="ic">🏖️</div>
+        <h3>Control de Días</h3>
+        <p>Vacaciones y licencias del equipo. Cargá tus días desde el celular; el jefe aprueba y todos ven la cobertura del año, con feriados y fechas de cierres marcadas.</p>
+        <div class="chips"><span class="chip">Empleados: sin clave</span><span class="chip">Jefe: con clave</span><span class="chip">En vivo</span></div>
+        <div class="actions">
+          <a class="btn primary" href="https://ematiromero98.github.io/chermisqui-control-dias/">Cargar mis vacaciones</a>
+          <a class="btn" href="https://ematiromero98.github.io/chermisqui-control-dias/">Panel del jefe</a>
+        </div>
+      </div>
+      <div class="card qb">
+        <div class="ic">📊</div>
+        <h3>Dashboard QuickBooks</h3>
+        <p>Control de conciliaciones mensuales: estado por cuenta, checklist, cuentas manuales, comentarios por cliente, KPIs y gráficos. Todos sobre el mismo dato, en vivo.</p>
+        <div class="chips"><span class="chip">Con clave</span><span class="chip">Multiusuario</span><span class="chip">Export CSV</span></div>
+        <div class="actions">
+          <a class="btn blue" href="https://ematiromero98.github.io/qb-dashboard/">Abrir dashboard</a>
+        </div>
+      </div>
+      <div class="card soon">
+        <div class="ic">➕</div>
+        <h3>Más módulos</h3>
+        <p>Acá se van sumando las próximas herramientas del estudio, todas con la misma entrada.</p>
+        <div class="chips"><span class="chip">Próximamente</span></div>
+        <div class="actions"><span class="btn">En preparación</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arquitectura -->
+  <section id="arch" class="hidden">
+    <div class="arch-head">
+      <h2>🗺️ Arquitectura del ecosistema</h2>
+      <p>Cómo está todo conectado y por qué los datos están seguros aunque el código sea público.</p>
+      <button class="d3btn" id="d3toggle">Vista 3D</button>
+    </div>
+    <div class="legend2">
+      <span><i style="background:var(--menta)"></i> Abierto</span>
+      <span><i style="background:var(--rojo)"></i> Protegido con clave</span>
+      <span><i style="background:var(--celeste)"></i> Flujo de datos</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="layers">
+        <div class="layer" style="--z:120px">
+          <div class="lh"><span class="tagc" style="background:var(--celeste)"></span>Personas</div>
+          <div class="nodes">
+            <div class="node open"><b>👥 Empleados</b><span>Cargan sus vacaciones desde el celular</span><span class="k">sin clave</span></div>
+            <div class="node lock"><b>🧑‍💼 Jefes</b><span>Aprueban, ven todo y editan</span><span class="k">con clave</span></div>
+          </div>
+        </div>
+        <div class="conn"><i></i><b>entran por el portal ↓</b></div>
+
+        <div class="layer" style="--z:80px">
+          <div class="lh"><span class="tagc" style="background:var(--menta)"></span>Portal (esta página)</div>
+          <div class="nodes">
+            <div class="node lock"><b>🧭 Portal del equipo</b><span>Puerta de entrada con clave a todas las herramientas</span><span class="k">GitHub Pages</span></div>
+          </div>
+        </div>
+        <div class="conn"><i></i><b>abre cada herramienta ↓</b></div>
+
+        <div class="layer" style="--z:40px">
+          <div class="lh"><span class="tagc" style="background:var(--ambar)"></span>Aplicaciones (HTML)</div>
+          <div class="nodes">
+            <div class="node"><b>🏖️ Control de Días</b><span>Formulario + panel del jefe</span><span class="k">chermisqui-control-dias</span></div>
+            <div class="node"><b>📊 QB Dashboard</b><span>Conciliaciones + Sueldos</span><span class="k">qb-dashboard</span></div>
+          </div>
+        </div>
+        <div class="conn"><i></i><b>hablan sólo por la Edge Function ↓</b></div>
+
+        <div class="layer" style="--z:0px">
+          <div class="lh"><span class="tagc" style="background:var(--rojo)"></span>Edge Functions · validan la clave</div>
+          <div class="nodes">
+            <div class="node lock"><b>⚙️ chcal-api</b><span>Calendario: cargar es libre; aprobar/editar pide clave</span></div>
+            <div class="node lock"><b>⚙️ qb-api</b><span>QB: valida la clave y usa la llave secreta del server</span></div>
+          </div>
+        </div>
+        <div class="conn"><i></i><b>consultan la base ↓</b></div>
+
+        <div class="layer" style="--z:-40px">
+          <div class="lh"><span class="tagc" style="background:var(--violet)"></span>Base de datos · Supabase (Postgres)</div>
+          <div class="nodes">
+            <div class="node lock"><b>🗄️ Tablas chcal_</b><span>Personas y ausencias</span><span class="k">RLS activado</span></div>
+            <div class="node lock"><b>🗄️ Tablas qb_</b><span>Clientes, cuentas, conciliaciones, sueldos</span><span class="k">RLS activado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="seccard ok">
+        <div class="ic">🌐</div>
+        <h4>El código es público, los datos NO</h4>
+        <p>En GitHub se ve cómo está hecho (el HTML), pero las vacaciones, conciliaciones y sueldos NO están ahí: viven en la base, aparte.</p>
+      </div>
+      <div class="seccard ok">
+        <div class="ic">🔑</div>
+        <h4>La clave se valida en el servidor</h4>
+        <p>El navegador nunca toca la base directo. Todo pasa por la Edge Function, que revisa la clave y recién ahí usa la llave secreta (que no está en el código).</p>
+      </div>
+      <div class="seccard warn">
+        <div class="ic">🛡️</div>
+        <h4>La base está cerrada (RLS)</h4>
+        <p>Las tablas tienen Row Level Security: sin pasar por la función con la clave, no se puede leer ni escribir nada. La clave del portal es la puerta cómoda; la real está en cada herramienta.</p>
+      </div>
+    </div>
+  </section>
+</div>
 <footer><b>Chermisqui &amp; Associates</b> · Portal interno del equipo</footer>
+</div>
+
+<script>
+(function(){
+  const HASH="772db517248838b0220518b4eb296a1f79cc9e5a1a9830943652b52cf9d86b3e"; // SHA-256 de la clave del portal
+  const $=s=>document.querySelector(s);
+  async function sha(t){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+  function open(){ $("#gate").classList.add("hidden"); $("#portal").classList.remove("hidden"); }
+  try{ if(localStorage.getItem("chq_portal")===HASH) open(); }catch(e){}
+  $("#gate-form").addEventListener("submit",async e=>{
+    e.preventDefault(); const v=$("#pin").value.trim(); const h=await sha(v);
+    if(h===HASH){ try{ if($("#remember").checked) localStorage.setItem("chq_portal",HASH); }catch(e){} open(); }
+    else $("#err").textContent="Clave incorrecta";
+  });
+  $("#logout").addEventListener("click",()=>{ try{ localStorage.removeItem("chq_portal"); }catch(e){} location.reload(); });
+  document.querySelector(".nav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
+    document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    const v=b.dataset.v; $("#home").classList.toggle("hidden",v!=="home"); $("#arch").classList.toggle("hidden",v!=="arch");
+    window.scrollTo(0,0);
+  });
+  $("#d3toggle").addEventListener("click",()=>{ const s=$("#stage"); s.classList.toggle("d3");
+    $("#d3toggle").classList.toggle("on"); $("#d3toggle").textContent=s.classList.contains("d3")?"Vista plana":"Vista 3D"; });
+})();
+</script>
 </body>
 </html>
