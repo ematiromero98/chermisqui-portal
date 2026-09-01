@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chermisqui · Ecosistema 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#12b886; --black:#141413; --white:#FFFFFF; --cream:#FAF9F5; --gray:#808080;
+    --prod:#27AE60; --mvp:#E67E22; --proto:#95A5A6;
+    --e-launcher:#FCBC45; --e-dep:#8E44AD; --e-data:#16A085; --e-infra:#2E86C1;
+    --panel:#FFFFFFEE; --line:#e7e3d8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:'Poppins',system-ui,sans-serif;color:var(--black);background:var(--cream);overflow:hidden}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+  /* ---- Top bar ---- */
+  #topbar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:14px;
+    padding:0 16px;z-index:20;pointer-events:none}
+  #brand{display:flex;align-items:center;gap:10px;pointer-events:auto}
+  #brand .dot{width:26px;height:26px;border-radius:7px;background:var(--gold);box-shadow:0 2px 8px #0002}
+  #brand b{font-weight:700;font-size:15px;letter-spacing:.2px}
+  #brand span{font-size:11px;color:var(--gray);display:block;margin-top:-2px}
+  #filters{display:flex;gap:6px;margin-left:8px;pointer-events:auto;flex-wrap:wrap}
+  .fbtn{font-family:inherit;font-size:12.5px;font-weight:500;border:1px solid var(--line);background:var(--white);
+    color:var(--black);padding:7px 13px;border-radius:20px;cursor:pointer;transition:.15s;white-space:nowrap;box-shadow:0 1px 3px #0001}
+  .fbtn:hover{border-color:var(--gold)}
+  .fbtn.active{background:var(--black);color:var(--white);border-color:var(--black)}
+  .fbtn .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+  /* ---- Left sidebar ---- */
+  #sidebar{position:absolute;top:64px;left:12px;width:250px;max-height:calc(100% - 150px);z-index:15;
+    background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 8px 30px #0001;overflow:auto;padding:6px 0}
+  .grp-h{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--gray);
+    padding:10px 14px 4px}
+  .row{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;transition:.12s;border-left:3px solid transparent}
+  .row:hover{background:#00000008}
+  .row.sel{background:#FCBC4522;border-left-color:var(--gold)}
+  .row .st{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .row .nm{font-size:13px;font-weight:500;flex:1;line-height:1.15}
+  .row .fc{font-size:10.5px;color:var(--gray);flex:0 0 auto}
+  .row.lm .nm{color:var(--e-infra);font-weight:600}
+  /* ---- filter panel ---- */
+  #filterpanel{padding:11px 13px 6px;border-bottom:1px solid var(--line)}
+  .fp-grp{margin-bottom:10px}
+  .fp-h{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:6px}
+  .fp-hint{text-transform:none;letter-spacing:0;font-weight:400;opacity:.7}
+  .fp-chips{display:flex;flex-wrap:wrap;gap:5px}
+  .fchip{font-family:inherit;font-size:11px;font-weight:500;border:1px solid var(--line);background:#fff;color:var(--black);
+    padding:4px 9px;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.12s}
+  .fchip i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
+  .fchip:hover{border-color:var(--gold)}
+  .fchip.off{opacity:.45;text-decoration:line-through;background:#00000006}
+  .fp-row{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+  .switch{position:relative;display:inline-block;width:38px;height:20px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .switch .sl{position:absolute;inset:0;background:#cfcabd;border-radius:20px;transition:.15s;cursor:pointer}
+  .switch .sl:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px #0003}
+  .switch input:checked + .sl{background:var(--gold)}
+  .switch input:checked + .sl:before{transform:translateX(18px)}
+  /* ---- Right detail ---- */
+  #detail{position:absolute;top:64px;right:12px;width:330px;max-height:calc(100% - 150px);z-index:15;
+    background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 8px 30px #0001;overflow:auto;display:none}
+  #detail.show{display:block}
+  #detail .dh{padding:16px 16px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--white)EE;backdrop-filter:blur(8px)}
+  #detail .dh h2{margin:0;font-size:17px;font-weight:700}
+  #detail .dh .sub{font-size:12px;color:var(--gray);margin-top:2px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chip{font-size:11px;font-weight:500;padding:4px 9px;border-radius:20px;border:1px solid var(--line);background:var(--white)}
+  .chip.ver{background:var(--black);color:#fff;border-color:var(--black)}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--white)}
+  .tab{flex:1;text-align:center;font-size:12.5px;font-weight:500;padding:11px 8px;cursor:pointer;color:var(--gray);border-bottom:2px solid transparent}
+  .tab.active{color:var(--black);border-bottom-color:var(--gold);font-weight:600}
+  .tabc{padding:15px 16px 20px;display:none;font-size:13px;line-height:1.55}
+  .tabc.active{display:block}
+  .tabc h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray)}
+  .tabc p{margin:0 0 12px}
+  .files{list-style:none;margin:0;padding:0}
+  .files li{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;font-size:11.5px;background:#00000006;
+    border:1px solid var(--line);border-radius:6px;padding:5px 8px;margin-bottom:5px;color:#333}
+  .store{list-style:none;margin:0 0 12px;padding:0}
+  .store li{font-size:12px;line-height:1.45;background:#00000005;border:1px solid var(--line);
+    border-radius:8px;padding:7px 9px;margin-bottom:6px}
+  .store li code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:#0000000a;padding:1px 5px;border-radius:4px}
+  .store-note{background:#eaf3fb;border:1px solid #cfe2f3;border-radius:8px;padding:9px 11px;font-size:12.5px}
+  .store-note code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:#ffffff99;padding:1px 5px;border-radius:4px}
+  .kv{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .kv b{font-weight:600}
+  .conns{margin-top:6px}
+  .conn{font-size:11.5px;padding:6px 8px;border-radius:7px;margin-bottom:5px;background:#00000005;border:1px solid var(--line)}
+  .conn .ar{font-weight:700}
+  /* ---- Bottom bar ---- */
+  #bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:16px;
+    align-items:stretch;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 24px)}
+  .card{background:var(--panel);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 6px 24px #0001;padding:10px 14px;display:flex;align-items:center;gap:12px}
+  .ctrl{gap:8px}
+  .ctrl button{font-family:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--white);
+    color:var(--black);width:38px;height:34px;border-radius:9px;cursor:pointer;transition:.12s;display:flex;align-items:center;justify-content:center}
+  .ctrl button:hover{border-color:var(--gold)}
+  .ctrl button.play{width:auto;padding:0 14px;gap:6px}
+  .ctrl .spd{display:flex;gap:3px}
+  .ctrl .spd b{font-size:11px;font-weight:500;padding:8px 9px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:var(--white)}
+  .ctrl .spd b.on{background:var(--black);color:#fff;border-color:var(--black)}
+  .legend{gap:16px;font-size:11px}
+  .legend .col{display:flex;flex-direction:column;gap:5px}
+  .legend .li{display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .legend .sw{width:16px;height:0;border-top:3px solid #000;border-radius:2px}
+  .legend .sq{width:11px;height:11px;border-radius:3px}
+  .legend .ttl{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);font-weight:600;margin-bottom:1px}
+  /* ---- labels ---- */
+  .barrio-label{font-family:'Poppins';font-weight:700;font-size:15px;letter-spacing:2px;text-transform:uppercase;
+    color:#141413;background:#FCBC4533;border:1.5px solid #FCBC45;padding:4px 12px;border-radius:20px;
+    white-space:nowrap;box-shadow:0 3px 10px #0001;pointer-events:none;opacity:.9}
+  .barrio-label.ntt{background:#2E86C122;border-color:#2E86C1;color:#1a4e73}
+  .barrio-label.per{background:#E91E6318;border-color:#E91E63;color:#a01446}
+  .barrio-label.ext{background:#ffffff;border:1.5px dashed var(--gray);color:var(--gray);font-size:12px}
+  .b-label{font-family:'Poppins';font-weight:600;font-size:12px;color:#141413;background:#ffffffe8;
+    padding:3px 9px;border-radius:12px;white-space:nowrap;pointer-events:none;border:1px solid #00000014;box-shadow:0 1px 4px #0001}
+  .b-label.dim{opacity:.28}
+  .b-label.gone{visibility:hidden;opacity:0}
+  .b-label.hi{background:var(--black);color:#fff;font-weight:700;box-shadow:0 3px 10px #0003}
+  .b-label.lm{color:#1a4e73;font-weight:700;font-size:12.5px;background:#eaf3fbee;border-color:#2E86C155}
+  .pay-label{font-family:'Poppins';font-weight:500;font-size:10.5px;color:#fff;background:#141413ee;
+    padding:3px 8px;border-radius:9px;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px #0003;
+    opacity:0}
+  .pay-label.on{opacity:1}
+  #tooltip{position:absolute;z-index:30;pointer-events:none;background:var(--black);color:#fff;font-size:12px;
+    font-weight:500;padding:6px 10px;border-radius:8px;transform:translate(-50%,-140%);display:none;white-space:nowrap;box-shadow:0 4px 14px #0004}
+  #hint{position:absolute;bottom:14px;left:14px;z-index:15;font-size:11px;color:var(--gray);background:#ffffffcc;
+    border:1px solid var(--line);border-radius:10px;padding:7px 11px;line-height:1.5;max-width:220px}
+  #css2d{position:absolute;inset:0;z-index:10;pointer-events:none;overflow:hidden}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#0002;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="css2d"></div>
+<div id="tooltip"></div>
+
+<div id="topbar">
+  <div id="brand"><div class="dot"></div><div><b>Chermisqui · Ecosistema 3D</b><span>portal · 2 apps · 2 funciones · 1 base</span></div></div>
+  <a href="index.html" class="fbtn" style="pointer-events:auto;text-decoration:none;color:inherit">← Volver al portal</a>
+  <div id="filters"></div>
+  <button id="btn-guide" class="fbtn" style="pointer-events:auto;margin-left:auto">ⓘ Guía</button>
+</div>
+
+<div id="sidebar"></div>
+
+<div id="detail">
+  <div class="dh">
+    <h2 id="d-name">—</h2>
+    <div class="sub" id="d-repo"></div>
+    <div class="chips" id="d-chips"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-t="que">Qué hace</div>
+    <div class="tab" data-t="como">Cómo está construido</div>
+  </div>
+  <div class="tabc active" id="tc-que"></div>
+  <div class="tabc" id="tc-como"></div>
+</div>
+
+<div id="bottom">
+  <div class="card ctrl">
+    <button class="play" id="btn-play">▶ <span id="play-lbl">Play</span></button>
+    <button id="btn-step" title="Paso a paso">⏭</button>
+    <div class="spd">
+      <b data-s="0.5">0.5x</b><b data-s="1" class="on">1x</b><b data-s="2">2x</b>
+    </div>
+  </div>
+  <div class="card legend">
+    <div class="col">
+      <div class="ttl">Conexiones</div>
+      <div class="li"><span class="sw" style="border-color:var(--e-launcher)"></span>Launcher / trigger</div>
+      <div class="li"><span class="sw" style="border-color:var(--e-data)"></span>Flujo de datos</div>
+    </div>
+    <div class="col">
+      <div class="ttl">&nbsp;</div>
+      <div class="li"><span class="sw" style="border-color:var(--e-infra)"></span>Infra compartida</div>
+      <div class="li"><span class="sw" style="border-color:var(--e-dep)"></span>Dependencia</div>
+    </div>
+    <div class="col">
+      <div class="ttl">Estado</div>
+      <div class="li"><span class="sq" style="background:var(--prod)"></span>Producción</div>
+      <div class="li"><span class="sq" style="background:var(--mvp)"></span>MVP</div>
+    </div>
+    <div class="col">
+      <div class="ttl">&nbsp;</div>
+      <div class="li"><span class="sq" style="background:var(--proto)"></span>Prototipo</div>
+      <div class="li"><span class="sq" style="background:var(--black)"></span>Infra (landmark)</div>
+    </div>
+  </div>
+</div>
+
+<div id="hint"><b>Arrastrar</b> rota · <b>scroll</b> zoom · <b>click</b> detalle · <b>ESC</b> limpia selección</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+/* ============================================================= DATA ===== */
+const BARRIOS = {
+  chq: { label:'Chermisqui', cls:'', pos:[0,-58] },
+};
+
+// estado: prod | mvp | proto ;  loc para altura ; pos [x,z]
+const NODES = [
+  // ---- Aplicaciones ----
+  { id:'portal', name:'Portal del equipo', barrio:'chq', estado:'prod', loc:2600, files:2, ver:'v1.0', mod:'sep-2026', hub:true,
+    repo:'ematiromero98/chermisqui-portal', stack:'HTML · GitHub Pages',
+    pos:[0,-28],
+    que:'La puerta de entrada del equipo. Con una clave abre todas las herramientas y muestra la Arquitectura y este Ecosistema 3D.',
+    como:'Una sola página HTML publicada en GitHub Pages. Entrada con clave (hash) del lado del navegador.',
+    key:['index.html'] },
+  { id:'controldias', name:'Control de Días', barrio:'chq', estado:'prod', loc:4200, files:3, ver:'v1.0', mod:'sep-2026',
+    repo:'ematiromero98/chermisqui-control-dias', stack:'HTML · Supabase',
+    pos:[-48,4],
+    que:'Vacaciones y licencias del equipo. Los empleados cargan desde el celular (sin clave); el jefe aprueba con clave. Feriados USA/ARG y bloqueos de cierres marcados.',
+    como:'index.html + app.js + config.js. Escribe por la Edge Function chcal-api.',
+    data:'Supabase EMPLOYEE-PRO · tablas <code>chcal_</code> (personas, ausencias).',
+    key:['index.html','app.js','config.js'] },
+  { id:'qbdash', name:'QB Dashboard', barrio:'chq', estado:'prod', loc:5200, files:5, ver:'v1.0', mod:'sep-2026',
+    repo:'ematiromero98/qb-dashboard', stack:'HTML · Supabase',
+    pos:[48,4],
+    que:'Control de conciliaciones mensuales de QuickBooks: estado por cuenta, checklist, cuentas manuales, comentarios por cliente, KPIs y gráficos. En vivo y multiusuario.',
+    como:'index.html + app.js + rrhh.js. Escribe por la Edge Function qb-api. Incluye el módulo Sueldos.',
+    data:'Supabase EMPLOYEE-PRO · tablas <code>qb_</code> (clientes, cuentas, conciliaciones, sueldos).',
+    key:['index.html','app.js','rrhh.js'] },
+  { id:'sueldos', name:'Sueldos & Evaluaciones', barrio:'chq', estado:'prod', loc:2200, files:1, ver:'v1.0', mod:'sep-2026',
+    repo:'ematiromero98/qb-dashboard', stack:'Módulo del QB Dashboard',
+    pos:[78,22],
+    que:'Módulo confidencial dentro del QB Dashboard: legajos, sueldos, aumentos y evaluaciones. Detrás de un segundo PIN (solo dirección).',
+    como:'rrhh.js dentro del QB Dashboard. Acciones rrhh_ validadas contra el PIN de jefes.',
+    data:'Supabase · <code>qb_personas</code>, <code>qb_sueldos</code>, <code>qb_evaluaciones</code>, <code>qb_bandas</code>.',
+    key:['rrhh.js'] },
+  // ---- Infra (landmarks) ----
+  { id:'chcalapi', name:'chcal-api', barrio:null, landmark:true, pos:[-48,44], h:20,
+    stack:'Supabase Edge Function (Deno)',
+    que:'La función servidor del calendario. Cargar es libre (empleados); aprobar/editar valida el PIN del jefe. Usa la llave secreta del lado del servidor.',
+    guarda:['Valida el PIN antes de aprobar/editar','Usa la service_role (no está en el código)','Cargar una ausencia es público'],
+    flujos:[['controldias','recibe cargas y devuelve el calendario']] },
+  { id:'qbapi', name:'qb-api', barrio:null, landmark:true, pos:[48,44], h:20,
+    stack:'Supabase Edge Function (Deno)',
+    que:'La función servidor del QB Dashboard. Valida la clave (equipo o jefes) y recién ahí toca la base con la llave secreta.',
+    guarda:['Valida el PIN de equipo y el PIN de jefes','Usa la service_role (no está en el código)'],
+    flujos:[['qbdash','conciliaciones y clientes'],['sueldos','sueldos y evaluaciones (PIN jefes)']] },
+  { id:'supabase', name:'Supabase · EMPLOYEE-PRO', barrio:null, landmark:true, pos:[0,82], h:32,
+    stack:'PostgreSQL · RLS',
+    que:'La base de datos de todo Chermisqui. Un solo proyecto (EMPLOYEE-PRO). Con RLS activado: nadie entra sin pasar por una Edge Function con la clave correcta.',
+    guarda:['🟢 <code>chcal_</code> → personas y ausencias (calendario)','🔵 <code>qb_</code> → clientes, cuentas, conciliaciones (QuickBooks)','🟣 <code>qb_personas / qb_sueldos / qb_evaluaciones</code> → Sueldos (jefes)'],
+    flujos:[['chcalapi','tablas chcal_'],['qbapi','tablas qb_']] },
+];
+
+// tipo: launcher | dep | data | infra
+const EDGES = [
+  ['portal','controldias','launcher','abre la herramienta'],
+  ['portal','qbdash','launcher','abre la herramienta'],
+  ['controldias','chcalapi','data','carga / aprueba (por la función)'],
+  ['qbdash','qbapi','data','conciliaciones (por la función)'],
+  ['sueldos','qbapi','data','sueldos (PIN jefes)'],
+  ['chcalapi','supabase','infra','tablas chcal_'],
+  ['qbapi','supabase','infra','tablas qb_'],
+];
+
+
+const EST_COLOR = { prod:0x27AE60, mvp:0xE67E22, proto:0x95A5A6 };
+const EST_LABEL = { prod:'Producción', mvp:'MVP', proto:'Prototipo' };
+const EDGE_COLOR = { launcher:0x12b886, dep:0x8E44AD, data:0x16A085, infra:0x2E86C1 };
+const NMAP = Object.fromEntries(NODES.map(n=>[n.id,n]));
+
+/* ========================================================== THREE SETUP == */
+const appEl = document.getElementById('app');
+const W = ()=>window.innerWidth, H = ()=>window.innerHeight;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xFAF9F5);
+scene.fog = new THREE.Fog(0xFAF9F5, 260, 520);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(W(),H()); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+appEl.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(W(),H());
+document.getElementById('css2d').appendChild(labelRenderer.domElement);
+
+const FR = 150;
+function makeCam(){
+  const a = W()/H();
+  const c = new THREE.OrthographicCamera(-FR*a/2, FR*a/2, FR/2, -FR/2, -600, 1600);
+  c.position.set(150,140,150); c.lookAt(0,0,0);
+  return c;
+}
+let camera = makeCam();
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.target.set(-5,4,0);
+controls.minZoom = 0.45; controls.maxZoom = 3.2;
+controls.maxPolarAngle = Math.PI*0.49;
+
+// lights
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd8d2c2, 0.85));
+const sun = new THREE.DirectionalLight(0xffffff, 1.05);
+sun.position.set(80,150,60); sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-180,right:180,top:180,bottom:-180,near:1,far:600});
+scene.add(sun);
+
+// ground (blueprint)
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(520,420),
+  new THREE.MeshStandardMaterial({ color:0xFAF9F5, roughness:1 }));
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.02; ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(520, 104, 0xd9e2ec, 0xeae6db);
+grid.position.y = 0; scene.add(grid);
+const grid2 = new THREE.GridHelper(520, 13, 0xbfd0e0, 0xbfd0e0);
+grid2.material.opacity = .5; grid2.material.transparent = true; scene.add(grid2);
+
+/* ============================================================ BARRIOS ==== */
+// district plates + labels
+const districtDefs = {
+  chq:{ x:15,z:-2, w:160, d:80, color:0x12b886 },
+};
+for(const [k,d] of Object.entries(districtDefs)){
+  const plate = new THREE.Mesh(
+    new THREE.PlaneGeometry(d.w,d.d),
+    new THREE.MeshStandardMaterial({ color:d.color, transparent:true, opacity:k==='ext'?0.04:0.08, roughness:1 }));
+  plate.rotation.x = -Math.PI/2; plate.position.set(d.x,0.03,d.z);
+  scene.add(plate);
+  // border
+  const edgesGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(d.w,d.d));
+  const border = new THREE.LineSegments(edgesGeo, new THREE.LineDashedMaterial({ color:d.color, dashSize:3, gapSize:2, transparent:true, opacity:.55 }));
+  border.computeLineDistances(); border.rotation.x = -Math.PI/2; border.position.set(d.x,0.05,d.z);
+  scene.add(border);
+  // label
+  const b = BARRIOS[k];
+  const el = document.createElement('div'); el.className = 'barrio-label '+b.cls; el.textContent = b.label;
+  const lo = new CSS2DObject(el); lo.position.set(d.x, 2, d.z - d.d/2 - 3);
+  scene.add(lo);
+}
+
+/* ========================================================== BUILDINGS ==== */
+const buildingMeshes = [];
+const nodeObjs = {}; // id -> {mesh, label, top:Vector3}
+
+function heightFor(n){
+  if(n.landmark||n.ghost) return n.h||20;
+  return THREE.MathUtils.clamp(Math.sqrt(n.loc)*0.16, 5, 34);
+}
+
+const raycaster = new THREE.Raycaster();
+
+for(const n of NODES){
+  const h = heightFor(n);
+  const [x,z] = n.pos;
+  let mesh, color;
+  if(n.landmark){
+    color = 0x141413;
+    const geo = new THREE.CylinderGeometry(4.5,6,h,6);
+    mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness:.4, metalness:.25 }));
+    mesh.position.set(x,h/2,z);
+    // gold cap
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(5,7,6),
+      new THREE.MeshStandardMaterial({ color:0xFCBC45, roughness:.3, metalness:.4 }));
+    cap.position.set(x,h+3.5,z); cap.castShadow=true; scene.add(cap);
+    nodeObjs[n.id]=nodeObjs[n.id]||{}; nodeObjs[n.id].cap=cap;
+  } else if(n.ghost){
+    color = 0xbfb9ac;
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(9,h,9),
+      new THREE.MeshStandardMaterial({ color, roughness:1, transparent:true, opacity:.4 }));
+    mesh.position.set(x,h/2,z);
+  } else {
+    color = EST_COLOR[n.estado];
+    const w = n.hub?12:9.5;
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,w),
+      new THREE.MeshStandardMaterial({ color, roughness:.72, metalness:.05 }));
+    mesh.position.set(x,h/2,z);
+    // roof accent (gold for hubs, subtle otherwise)
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(w+0.6,1.1,w+0.6),
+      new THREE.MeshStandardMaterial({ color:n.hub?0xFCBC45:0x141413, roughness:.5 }));
+    roof.position.set(x,h+0.4,z); roof.castShadow=true; scene.add(roof);
+    nodeObjs[n.id]=nodeObjs[n.id]||{}; nodeObjs[n.id].roof=roof;
+  }
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData.id = n.id;
+  scene.add(mesh);
+  buildingMeshes.push(mesh);
+
+  // label
+  const el = document.createElement('div');
+  el.className = 'b-label' + (n.landmark?' lm':'');
+  el.textContent = n.name.replace(' (Pasaporte)','');
+  const lo = new CSS2DObject(el); lo.position.set(x, h+ (n.landmark?9:4), z);
+  scene.add(lo);
+
+  nodeObjs[n.id]=nodeObjs[n.id]||{};
+  Object.assign(nodeObjs[n.id], { mesh, label:el, labelObj:lo, top:new THREE.Vector3(x,h,z), node:n });
+}
+
+/* ============================================================= EDGES ===== */
+const edgeObjs = []; // {line, dots:[], type, from, to, payload, payLabel}
+const dotGeo = new THREE.SphereGeometry(1.15,10,10);
+
+for(const [from,to,type,payload] of EDGES){
+  const a = nodeObjs[from].top.clone();
+  const b = nodeObjs[to].top.clone();
+  const mid = a.clone().add(b).multiplyScalar(0.5);
+  const dist = a.distanceTo(b);
+  mid.y += Math.min(38, 12 + dist*0.28);
+  const curve = new THREE.QuadraticBezierCurve3(a.clone().setY(a.y+1), mid, b.clone().setY(b.y+1));
+  const col = EDGE_COLOR[type];
+  const pts = curve.getPoints(40);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:.32 }));
+  scene.add(line);
+
+  const dots = [];
+  const nDots = type==='launcher'?1:2;
+  for(let i=0;i<nDots;i++){
+    const d = new THREE.Mesh(dotGeo, new THREE.MeshBasicMaterial({ color:col }));
+    d.userData.p = i/nDots + Math.random()*0.15;
+    scene.add(d); dots.push(d);
+  }
+  // payload label (hidden until focus) — se togglea por .visible del objeto,
+  // NO por style.display (CSS2DRenderer reescribe display cada frame según .visible)
+  const pel = document.createElement('div'); pel.className='pay-label'; pel.textContent=payload;
+  const plo = new CSS2DObject(pel); plo.position.copy(mid); scene.add(plo);
+
+  edgeObjs.push({ line, dots, curve, type, from, to, payload, payLabel:pel, payLabelObj:plo, mid });
+}
+
+/* ============================================= NEIGHBORS / STATE ========= */
+function neighborsOf(id){
+  const s = new Set([id]);
+  for(const e of edgeObjs){ if(e.from===id) s.add(e.to); if(e.to===id) s.add(e.from); }
+  return s;
+}
+let activeBarrio = 'todos';
+let selected = null;
+let playing = true;
+let speed = 1;
+// filtros extra
+const estadoOn = { prod:true, mvp:true, proto:true };
+const typeOn   = { launcher:true, data:true, infra:true, dep:true };
+let showPayloads = true;
+
+function projPasses(n){
+  if(n.estado && !estadoOn[n.estado]) return false;
+  if(activeBarrio!=='todos' && n.barrio!==activeBarrio) return false;
+  return true;
+}
+function nodeVisibleByFilter(n){
+  if(n.ghost) return activeBarrio==='todos';
+  if(n.landmark){
+    // visible si conecta con algún proyecto (no-landmark) que pase los filtros
+    return EDGES.some(([f,t])=>{
+      const other = f===n.id? t : (t===n.id? f : null);
+      return other && NMAP[other] && !NMAP[other].landmark && nodeVisibleByFilter(NMAP[other]);
+    });
+  }
+  return projPasses(n);
+}
+
+function apply(){
+  const nb = selected? neighborsOf(selected): null;
+  // nodes
+  for(const n of NODES){
+    const o = nodeObjs[n.id]; if(!o) continue;
+    const vis = nodeVisibleByFilter(n);
+    const dim = nb && !nb.has(n.id);
+    o.mesh.visible = vis;
+    if(o.roof) o.roof.visible = vis;
+    if(o.cap) o.cap.visible = vis;
+    const op = dim?0.16:1;
+    setOpacity(o.mesh, op);
+    if(o.roof) setOpacity(o.roof, op);
+    if(o.cap) setOpacity(o.cap, op);
+    o.label.style.setProperty('opacity', !vis ? '0' : (dim ? '0.28' : '1'), 'important');
+    o.label.classList.toggle('hi', selected===n.id);
+  }
+  // edges
+  for(const e of edgeObjs){
+    const fv = nodeVisibleByFilter(NMAP[e.from]), tv = nodeVisibleByFilter(NMAP[e.to]);
+    const vis = fv && tv && typeOn[e.type];
+    const active = vis && (!selected || e.from===selected || e.to===selected);
+    e.line.visible = vis;
+    e.line.material.opacity = active?0.7:(vis?0.12:0);
+    e.dots.forEach(d=>{ d.visible = active; });
+    e.payLabel.style.setProperty('opacity', (showPayloads && active && selected) ? '1' : '0', 'important');
+  }
+}
+function setOpacity(m,o){ if(!m.material) return; m.material.transparent = o<1; m.material.opacity=o; }
+
+/* ============================================================= UI ======== */
+// filter buttons
+const filterEl = document.getElementById('filters');
+const FILTERS = [['todos','Todos',null],['chq','Herramientas','#12b886']];
+for(const [k,lbl,c] of FILTERS){
+  const b = document.createElement('button'); b.className='fbtn'+(k==='todos'?' active':'');
+  b.innerHTML = (c?`<span class="cdot" style="background:${c}"></span>`:'')+lbl;
+  b.onclick = ()=>{ activeBarrio=k; [...filterEl.children].forEach(x=>x.classList.remove('active')); b.classList.add('active');
+    if(selected && !nodeVisibleByFilter(NMAP[selected])){ selected=null; hideDetail(); }
+    apply(); syncRows(); frameBarrio(k); };
+  filterEl.appendChild(b);
+}
+
+// sidebar + panel de filtros
+const sb = document.getElementById('sidebar');
+sb.innerHTML =
+  '<div id="filterpanel">'+
+    '<div class="fp-grp"><div class="fp-h">Estado <span class="fp-hint">(click para ocultar)</span></div><div class="fp-chips" id="fp-estado">'+
+      '<button class="fchip on" data-e="prod"><i style="background:#27AE60"></i>Producción</button>'+
+      '<button class="fchip on" data-e="mvp"><i style="background:#E67E22"></i>MVP</button>'+
+      '<button class="fchip on" data-e="proto"><i style="background:#95A5A6"></i>Prototipo</button>'+
+    '</div></div>'+
+    '<div class="fp-grp"><div class="fp-h">Tipo de conexión</div><div class="fp-chips" id="fp-type">'+
+      '<button class="fchip on" data-t="launcher"><i style="background:#FCBC45"></i>Launcher</button>'+
+      '<button class="fchip on" data-t="data"><i style="background:#16A085"></i>Datos</button>'+
+      '<button class="fchip on" data-t="infra"><i style="background:#2E86C1"></i>Infra</button>'+
+      '<button class="fchip on" data-t="dep"><i style="background:#8E44AD"></i>Dependencia</button>'+
+    '</div></div>'+
+    '<div class="fp-grp fp-row"><span class="fp-h" style="margin:0">Carteles de conexión</span>'+
+      '<label class="switch"><input type="checkbox" id="tg-pay" checked><span class="sl"></span></label></div>'+
+  '</div><div id="projlist"></div>';
+const projlist = document.getElementById('projlist');
+
+function syncRows(){
+  projlist.querySelectorAll('.row').forEach(r=>{
+    const n = NMAP[r.dataset.id];
+    r.style.opacity = (n && nodeVisibleByFilter(n)) ? '1' : '.3';
+  });
+}
+document.querySelectorAll('#fp-estado .fchip').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.e; estadoOn[k]=!estadoOn[k];
+  b.classList.toggle('on',estadoOn[k]); b.classList.toggle('off',!estadoOn[k]);
+  if(selected && !nodeVisibleByFilter(NMAP[selected])){ selected=null; hideDetail(); }
+  apply(); syncRows();
+});
+document.querySelectorAll('#fp-type .fchip').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.t; typeOn[k]=!typeOn[k];
+  b.classList.toggle('on',typeOn[k]); b.classList.toggle('off',!typeOn[k]);
+  apply();
+});
+document.getElementById('tg-pay').onchange=(ev)=>{ showPayloads=ev.target.checked; apply(); };
+
+function buildSidebar(){
+  projlist.innerHTML='';
+  const groups = [
+    ['Aplicaciones', NODES.filter(n=>n.barrio==='chq')],
+    ['Infraestructura', NODES.filter(n=>n.landmark)],
+  ];
+  for(const [g,list] of groups){
+    if(!list.length) continue;
+    const h=document.createElement('div'); h.className='grp-h'; h.textContent=g; projlist.appendChild(h);
+    for(const n of list){
+      const r=document.createElement('div'); r.className='row'+(n.landmark||n.ghost?' lm':''); r.dataset.id=n.id;
+      const st = n.landmark? '#141413' : n.ghost? '#bfb9ac' : '#'+EST_COLOR[n.estado].toString(16).padStart(6,'0');
+      r.innerHTML = `<span class="st" style="background:${st}"></span>`+
+        `<span class="nm">${n.name}</span>`+
+        (n.files?`<span class="fc">${n.files}</span>`:'');
+      r.onclick=()=>selectNode(n.id,true);
+      projlist.appendChild(r);
+    }
+  }
+}
+buildSidebar();
+
+// detail
+const detail = document.getElementById('detail');
+function showDetail(n){
+  document.getElementById('d-name').textContent = n.name;
+  document.getElementById('d-repo').textContent = n.repo? 'github.com/'+n.repo : (n.landmark?'infraestructura compartida':'externo · no-repo');
+  const chips = document.getElementById('d-chips'); chips.innerHTML='';
+  const add=(t,cls='')=>{ const c=document.createElement('span'); c.className='chip '+cls; c.innerHTML=t; chips.appendChild(c); };
+  if(n.ver && n.ver!=='—') add(n.ver,'ver');
+  if(n.estado) add(`<span style="color:#${EST_COLOR[n.estado].toString(16)}">●</span> ${EST_LABEL[n.estado]}`);
+  if(n.stack) add(n.stack);
+  if(n.files) add(n.files+' archivos');
+  if(n.loc) add(n.loc.toLocaleString('es-AR')+' líneas');
+  if(n.mod) add('↻ '+n.mod);
+  // qué
+  let que = `<h4>En criollo</h4><p>${n.que||'—'}</p>`;
+  if(n.guarda && n.guarda.length){
+    que += `<h4>${n.landmark?'Qué guarda / qué hay acá':'Qué guarda'}</h4><ul class="store">`+n.guarda.map(g=>`<li>${g}</li>`).join('')+`</ul>`;
+  }
+  if(n.flujos && n.flujos.length){
+    que += `<h4>Qué pasa por acá</h4><div class="conns">`+n.flujos.map(([id,txt])=>{
+      const nm = NMAP[id]?NMAP[id].name:id;
+      const col = NMAP[id]&&NMAP[id].estado?'#'+EST_COLOR[NMAP[id].estado].toString(16):'#2E86C1';
+      return `<div class="conn" style="border-left:3px solid ${col}"><b>${nm}</b><br><span style="color:#808080">${txt}</span></div>`;
+    }).join('')+`</div>`;
+  } else {
+    que += connHTML(n);
+  }
+  document.getElementById('tc-que').innerHTML = que;
+  // cómo
+  let como = `<h4>Stack &amp; construcción</h4><p>${n.como||('<i>'+(n.stack||'')+'</i>')}</p>`;
+  if(n.data){ como += `<h4>Dónde persiste la data</h4><p class="store-note">${n.data}</p>`; }
+  if(n.key && n.key.length){
+    como += `<h4>Archivos clave</h4><ul class="files">`+n.key.map(f=>`<li>${f}</li>`).join('')+`</ul>`;
+  }
+  document.getElementById('tc-como').innerHTML = como;
+  detail.classList.add('show');
+  // reset tab
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='que'));
+  document.getElementById('tc-que').classList.add('active');
+  document.getElementById('tc-como').classList.remove('active');
+}
+function connHTML(n){
+  const outs = EDGES.filter(e=>e[0]===n.id), ins = EDGES.filter(e=>e[1]===n.id);
+  if(!outs.length && !ins.length) return '';
+  let h = '<h4>Conexiones</h4><div class="conns">';
+  for(const [f,t,ty,p] of outs) h += `<div class="conn" style="border-left:3px solid #${EDGE_COLOR[ty].toString(16)}"><span class="ar">→</span> ${NMAP[t].name}<br><span style="color:#808080">${p}</span></div>`;
+  for(const [f,t,ty,p] of ins) h += `<div class="conn" style="border-left:3px solid #${EDGE_COLOR[ty].toString(16)}"><span class="ar">←</span> ${NMAP[f].name}<br><span style="color:#808080">${p}</span></div>`;
+  return h+'</div>';
+}
+function hideDetail(){ detail.classList.remove('show'); }
+
+function showIntro(){
+  document.getElementById('d-name').textContent = 'Cómo leer esta ciudad';
+  document.getElementById('d-repo').textContent = 'portal · 2 apps · 2 funciones · 1 base';
+  const chips=document.getElementById('d-chips'); chips.innerHTML=
+    '<span class="chip"><span style="color:#27AE60">●</span> Producción</span>'+
+    '<span class="chip"><span style="color:#E67E22">●</span> MVP</span>'+
+    '<span class="chip"><span style="color:#95A5A6">●</span> Prototipo</span>'+
+    '<span class="chip"><span style="color:#141413">●</span> Infra</span>';
+  document.getElementById('tc-que').innerHTML =
+    '<h4>La idea</h4><p>Cada <b>edificio es una pieza</b> del sistema de Chermisqui. Los <b>verdes</b> son las apps web (Portal, Control de Días, QB Dashboard, Sueldos). El <b>techo con punta</b> marca el <b>Portal</b>, la puerta de entrada.</p>'+
+    '<h4>Los edificios negros (infraestructura)</h4>'+
+    '<div class="conns">'+
+    '<div class="conn" style="border-left:3px solid #141413"><b>chcal-api · qb-api</b><br><span style="color:#808080">Las funciones del servidor (Edge Functions). Validan la clave y recién ahí tocan la base con la llave secreta.</span></div>'+
+    '<div class="conn" style="border-left:3px solid #141413"><b>Supabase · EMPLOYEE-PRO</b><br><span style="color:#808080">La base de datos, cerrada con RLS. Guarda las tablas chcal_ (calendario) y qb_ (QuickBooks + sueldos).</span></div>'+
+    '</div>'+
+    '<p style="color:#808080;font-size:12px">👉 Clickeá cualquier edificio para ver <b>qué hace</b> y <b>cómo se conecta</b>. Los puntitos que viajan son la data moviéndose por el sistema.</p>';
+  document.getElementById('tc-como').innerHTML =
+    '<h4>Cómo moverte</h4>'+
+    '<ul class="store">'+
+    '<li><b>Arrastrar</b> rota la cámara · <b>scroll</b> hace zoom</li>'+
+    '<li><b>Click</b> en un edificio: lo enfoca, atenúa el resto y muestra sus conexiones</li>'+
+    '<li><b>Filtro "Herramientas"</b>: deja solo las apps y vuela la cámara hasta ellas</li>'+
+    '<li><b>Play/Pausa · paso a paso · velocidad</b>: controlan los flujos de datos animados</li>'+
+    '<li><b>ESC</b>: limpia la selección</li>'+
+    '</ul>'+
+    '<h4>Las conexiones (colores)</h4>'+
+    '<ul class="store">'+
+    '<li><span style="color:#12b886">▬</span> <b>Launcher</b>: el Portal abre la herramienta</li>'+
+    '<li><span style="color:#16A085">▬</span> <b>Flujo de datos</b>: la app manda/recibe por la Edge Function</li>'+
+    '<li><span style="color:#2E86C1">▬</span> <b>Infra</b>: la función consulta la base (Supabase)</li>'+
+    '</ul>';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.t==='que'));
+  document.getElementById('tc-que').classList.add('active');
+  document.getElementById('tc-como').classList.remove('active');
+  detail.classList.add('show');
+}
+document.getElementById('btn-guide').onclick = showIntro;
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  document.getElementById('tc-que').classList.toggle('active',t.dataset.t==='que');
+  document.getElementById('tc-como').classList.toggle('active',t.dataset.t==='como');
+});
+
+function selectNode(id, fromList){
+  selected = id;
+  [...sb.querySelectorAll('.row')].forEach(r=>r.classList.toggle('sel',r.dataset.id===id));
+  showDetail(NMAP[id]);
+  apply();
+  if(fromList) focusOn(id);
+}
+function clearSel(){ selected=null; [...sb.querySelectorAll('.row')].forEach(r=>r.classList.remove('sel')); hideDetail(); apply(); }
+
+// controls
+const btnPlay=document.getElementById('btn-play'), playLbl=document.getElementById('play-lbl');
+btnPlay.onclick=()=>{ playing=!playing; btnPlay.firstChild.textContent = playing?'▶ ':'⏸ '; playLbl.textContent = playing?'Play':'Pausa'; };
+document.getElementById('btn-step').onclick=()=>{ stepOnce(); };
+document.querySelectorAll('.spd b').forEach(b=>b.onclick=()=>{
+  speed=parseFloat(b.dataset.s); document.querySelectorAll('.spd b').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+});
+
+/* ======================================================= INTERACTION ===== */
+const tooltip = document.getElementById('tooltip');
+const mouse = new THREE.Vector2();
+let hovered = null;
+renderer.domElement.addEventListener('pointermove', ev=>{
+  mouse.x = (ev.clientX/W())*2-1; mouse.y = -(ev.clientY/H())*2+1;
+  raycaster.setFromCamera(mouse,camera);
+  const hits = raycaster.intersectObjects(buildingMeshes.filter(m=>m.visible));
+  if(hits.length){
+    const id = hits[0].object.userData.id;
+    hovered = id;
+    tooltip.style.display='block'; tooltip.style.left=ev.clientX+'px'; tooltip.style.top=ev.clientY+'px';
+    tooltip.textContent = NMAP[id].name;
+    renderer.domElement.style.cursor='pointer';
+  } else { hovered=null; tooltip.style.display='none'; renderer.domElement.style.cursor='grab'; }
+});
+let downXY=null;
+renderer.domElement.addEventListener('pointerdown', ev=>{ downXY=[ev.clientX,ev.clientY]; });
+renderer.domElement.addEventListener('pointerup', ev=>{
+  if(!downXY) return;
+  const moved = Math.hypot(ev.clientX-downXY[0], ev.clientY-downXY[1]);
+  downXY=null;
+  if(moved>5) return; // was a drag
+  if(hovered) selectNode(hovered);
+  else clearSel();
+});
+window.addEventListener('keydown', e=>{ if(e.key==='Escape') clearSel(); });
+
+/* ======================================================= CAMERA FRAMING == */
+function frameBarrio(k){
+  let tx=15,tz=10,zoom=0.85;
+  if(k==='chq'){ tx=15; tz=0; zoom=1.05; }
+  else { tx=15; tz=10; zoom=0.82; }
+  animateCam(tx,tz,zoom);
+}
+function focusOn(id){
+  const p = nodeObjs[id].top;
+  animateCam(p.x, p.z, Math.max(controls.object.zoom,1.3));
+}
+let camAnim=null;
+function animateCam(tx,tz,zoom){
+  camAnim={ fromT:controls.target.clone(), toT:new THREE.Vector3(tx,4,tz), fromZ:camera.zoom, toZ:zoom, t:0 };
+}
+
+/* ============================================================= LOOP ====== */
+const clock = new THREE.Clock();
+function stepOnce(){
+  for(const e of edgeObjs) for(const d of e.dots){ d.userData.p=(d.userData.p+0.07)%1; }
+  updateDotPos();
+}
+function updateDotPos(){
+  for(const e of edgeObjs){
+    if(!e.dots[0]||!e.dots[0].visible) continue;
+    for(const d of e.dots){ e.curve.getPointAt(d.userData.p, d.position); }
+  }
+}
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(),0.05);
+  if(playing){ for(const e of edgeObjs) for(const d of e.dots){ d.userData.p=(d.userData.p+dt*0.14*speed)%1; } }
+  updateDotPos();
+  // pulse hubs
+  const t = clock.elapsedTime;
+  for(const id of ['arca','suite','ntterp']){ const o=nodeObjs[id]; if(o&&o.cap) o.cap.rotation.y=t*0.5; }
+  if(camAnim){
+    camAnim.t=Math.min(1,camAnim.t+dt*2.2); const e=1-Math.pow(1-camAnim.t,3);
+    controls.target.lerpVectors(camAnim.fromT,camAnim.toT,e);
+    camera.zoom = camAnim.fromZ+(camAnim.toZ-camAnim.fromZ)*e; camera.updateProjectionMatrix();
+    if(camAnim.t>=1) camAnim=null;
+  }
+  controls.update();
+  renderer.render(scene,camera);
+  labelRenderer.render(scene,camera);
+}
+apply(); showIntro(); animate();
+
+window.addEventListener('resize', ()=>{
+  const a=W()/H();
+  camera.left=-FR*a/2; camera.right=FR*a/2; camera.top=FR/2; camera.bottom=-FR/2;
+  camera.updateProjectionMatrix();
+  renderer.setSize(W(),H()); labelRenderer.setSize(W(),H());
+});
+</script>
+</body>
+</html>
