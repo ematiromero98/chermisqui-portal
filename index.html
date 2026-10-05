@@ -21,18 +21,6 @@
   a{text-decoration:none;color:var(--menta)}
   .hidden{display:none!important}
 
-  /* ===== Gate ===== */
-  .gate{position:fixed;inset:0;background:radial-gradient(900px 500px at 50% -10%,#141a25,#0b0e13);
-    display:grid;place-items:center;z-index:100;padding:20px}
-  .gate-card{background:var(--card);border:1px solid var(--borde);border-radius:18px;padding:28px;max-width:360px;width:100%;text-align:center}
-  .gate-card .logo{width:60px;height:60px;border-radius:16px;background:var(--celeste-t);border:1px solid var(--borde);display:inline-grid;place-items:center;font-size:30px;margin-bottom:14px}
-  .gate-card h1{font-size:20px;margin:0 0 4px}
-  .gate-card p{color:var(--suave);font-size:13px;margin:0 0 16px}
-  .gate-card input{width:100%;background:var(--fondo);border:1px solid var(--borde);border-radius:11px;padding:12px;color:var(--texto);font-size:15px;text-align:center}
-  .gate-card input:focus{outline:none;border-color:var(--menta)}
-  .gate-card button{width:100%;margin-top:12px;background:var(--menta);color:#04120c;border:none;border-radius:11px;padding:13px;font-weight:700;font-size:15px;cursor:pointer}
-  .gate-err{color:var(--rojo);font-size:12.5px;min-height:16px;margin-top:8px}
-  .gate-card label{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;font-size:12.5px;color:var(--suave)}
 
   /* ===== Topbar ===== */
   .top{display:flex;align-items:center;gap:12px;padding:18px 0 8px;flex-wrap:wrap}
@@ -126,21 +114,8 @@
 </head>
 <body>
 
-<!-- ===== Gate ===== -->
-<div id="gate" class="gate">
-  <form class="gate-card" id="gate-form" autocomplete="off">
-    <div class="logo">🧭</div>
-    <h1>Portal del equipo</h1>
-    <p>Chermisqui &amp; Associates · acceso interno</p>
-    <input id="pin" type="password" placeholder="Clave de acceso" autocomplete="off">
-    <label><input type="checkbox" id="remember" style="width:auto"> Recordar en esta compu</label>
-    <button type="submit">Entrar</button>
-    <div class="gate-err" id="err"></div>
-  </form>
-</div>
-
 <!-- ===== Portal ===== -->
-<div id="portal" class="hidden">
+<div id="portal">
 <div class="wrap">
   <div class="top">
     <div class="logo">🧭</div>
@@ -148,7 +123,6 @@
     <div class="sp"></div>
     <div class="nav"><button data-v="home" class="on">Herramientas</button><button data-v="arch">🗺️ Arquitectura</button></div>
     <a class="logout" href="ecosistema.html" style="text-decoration:none">🌐 Ecosistema 3D</a>
-    <button class="logout" id="logout">Salir</button>
   </div>
 
   <!-- Home -->
@@ -215,7 +189,7 @@
         <div class="layer" style="--z:80px">
           <div class="lh"><span class="tagc" style="background:var(--menta)"></span>Portal (esta página)</div>
           <div class="nodes">
-            <div class="node lock"><b>🧭 Portal del equipo</b><span>Puerta de entrada con clave a todas las herramientas</span><span class="k">GitHub Pages</span></div>
+            <div class="node open"><b>🧭 Portal del equipo</b><span>Página de entrada con los links a las herramientas</span><span class="k">GitHub Pages</span></div>
           </div>
         </div>
         <div class="conn"><i></i><b>abre cada herramienta ↓</b></div>
@@ -272,7 +246,7 @@
       <div class="seccard warn">
         <div class="ic">🛡️</div>
         <h4>La base está cerrada (RLS)</h4>
-        <p>Las tablas tienen Row Level Security: sin pasar por la función con la clave, no se puede leer ni escribir nada. La clave del portal es la puerta cómoda; la real está en cada herramienta.</p>
+        <p>Las tablas tienen Row Level Security: sin pasar por la función con la clave, no se puede leer ni escribir nada. El portal es solo una página de links: la clave se pide dentro de cada herramienta.</p>
       </div>
     </div>
   </section>
@@ -282,18 +256,7 @@
 
 <script>
 (function(){
-  const HASH="772db517248838b0220518b4eb296a1f79cc9e5a1a9830943652b52cf9d86b3e"; // SHA-256 de la clave del portal
   const $=s=>document.querySelector(s);
-  async function sha(t){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
-    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-  function open(){ $("#gate").classList.add("hidden"); $("#portal").classList.remove("hidden"); }
-  try{ if(localStorage.getItem("chq_portal")===HASH) open(); }catch(e){}
-  $("#gate-form").addEventListener("submit",async e=>{
-    e.preventDefault(); const v=$("#pin").value.trim(); const h=await sha(v);
-    if(h===HASH){ try{ if($("#remember").checked) localStorage.setItem("chq_portal",HASH); }catch(e){} open(); }
-    else $("#err").textContent="Clave incorrecta";
-  });
-  $("#logout").addEventListener("click",()=>{ try{ localStorage.removeItem("chq_portal"); }catch(e){} location.reload(); });
   document.querySelector(".nav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return;
     document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
     const v=b.dataset.v; $("#home").classList.toggle("hidden",v!=="home"); $("#arch").classList.toggle("hidden",v!=="arch");
